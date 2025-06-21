@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillSwapX - Login & Signup</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <!-- Navbar -->
+  <nav class="bg-white shadow p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-blue-600">SkillSwapX</h1>
+    <div class="space-x-4">
+      <a href="index.html" class="hover:underline">Home</a>
+      <a href="#login" class="bg-blue-600 text-white px-4 py-2 rounded">Login</a>
+    </div>
+  </nav>
+
+  <!-- Authentication Section -->
+  <section class="py-20 px-6 flex flex-col md:flex-row gap-10 justify-center items-start">
+    <!-- Signup Form -->
+    <div class="bg-white p-8 rounded shadow-md w-full md:w-1/2">
+      <h2 class="text-2xl font-bold mb-4">Sign Up</h2>
+      <form id="signup-form" class="space-y-4">
+        <input id="signup-name" type="text" placeholder="Full Name" class="w-full p-3 border rounded" required>
+        <input id="signup-email" type="email" placeholder="Email" class="w-full p-3 border rounded" required>
+        <input id="signup-password" type="password" placeholder="Password" class="w-full p-3 border rounded" required>
+        <input id="signup-teach" type="text" placeholder="Skills You Can Teach (comma separated)" class="w-full p-3 border rounded">
+        <input id="signup-learn" type="text" placeholder="Skills You Want to Learn (comma separated)" class="w-full p-3 border rounded">
+        <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded">Create Account</button>
+      </form>
+    </div>
+
+    <!-- Login Form -->
+    <div class="bg-white p-8 rounded shadow-md w-full md:w-1/2">
+      <h2 class="text-2xl font-bold mb-4">Login</h2>
+      <form id="login-form" class="space-y-4">
+        <input id="login-email" type="email" placeholder="Email" class="w-full p-3 border rounded" required>
+        <input id="login-password" type="password" placeholder="Password" class="w-full p-3 border rounded" required>
+        <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded">Login</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center py-8 bg-gray-100 text-sm text-gray-600">
+    &copy; 2025 SkillSwapX. Created with 💙 by Abhay Singh Tomar
+  </footer>
+
+  <!-- Firebase Configuration -->
+  <script>
+    const firebaseConfig = {
+    apiKey: "AIzaSyBVjWbRv4mFpS3JzkvoZcaUduhlHnKUX4E",
+    authDomain: "collegue-c8d48.firebaseapp.com",
+    projectId: "collegue-c8d48",
+    storageBucket: "collegue-c8d48.firebasestorage.app",
+    messagingSenderId: "701506337347",
+    appId: "1:701506337347:web:340cf197f27c97bab232f6",
+    measurementId: "G-GX3784PQ93"
+  };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Signup logic
+    document.getElementById('signup-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          console.log("Signup successful:", userCredential.user);
+          alert("Account created successfully!");
+        })
+        .catch((error) => {
+          console.error("Signup error:", error.message);
+          alert("Signup failed: " + error.message);
+        });
+    });
+
+    // Login logic
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          console.log("Login successful:", userCredential.user);
+          alert("Logged in successfully!");
+        })
+        .catch((error) => {
+          console.error("Login error:", error.message);
+          alert("Login failed: " + error.message);
+        });
+    });
+  </script>
+</body>
+</html>

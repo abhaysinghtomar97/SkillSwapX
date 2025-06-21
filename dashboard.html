@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillSwapX - Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <!-- Navbar -->
+  <nav class="bg-white shadow p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-blue-600">SkillSwapX Dashboard</h1>
+    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
+  </nav>
+
+  <!-- Dashboard Content -->
+  <main class="p-6 md:p-12">
+    <h2 class="text-3xl font-bold mb-6">Welcome, <span id="user-name">User</span> 👋</h2>
+    <p class="text-lg mb-4">SkillCoins Balance: <span class="font-semibold text-green-600">100</span></p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white p-6 shadow rounded">
+        <h3 class="text-xl font-semibold mb-2">📤 My Courses</h3>
+        <p>View, manage, or edit your uploaded courses.</p>
+      </div>
+      <div class="bg-white p-6 shadow rounded">
+        <h3 class="text-xl font-semibold mb-2">📥 My Learnings</h3>
+        <p>Track the courses you are enrolled in and progress status.</p>
+      </div>
+      <div class="bg-white p-6 shadow rounded">
+        <h3 class="text-xl font-semibold mb-2">📆 1-on-1 Sessions</h3>
+        <p>Check upcoming mentorship calls you've booked.</p>
+      </div>
+      <div class="bg-white p-6 shadow rounded">
+        <h3 class="text-xl font-semibold mb-2">⚙️ Settings</h3>
+        <p>Update profile, change password, and set skill preferences.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-8 bg-gray-100 text-sm text-gray-600">
+    &copy; 2025 SkillSwapX. Created with 💙 by Abhay Singh Tomar
+  </footer>
+
+  <!-- Logout Script -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function logout() {
+      auth.signOut().then(() => {
+        alert("Logged out!");
+        window.location.href = "auth.html";
+      });
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('user-name').textContent = user.email;
+      } else {
+        window.location.href = "auth.html";
+      }
+    });
+  </script>
+</body>
+</html>
