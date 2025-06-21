@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SkillCoins Wallet - SkillSwapX</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="coin-logic.js" defer></script>
 </head>
+
 <body class="bg-gray-50 text-gray-800">
   <!-- Navbar -->
   <nav class="bg-white shadow p-4 flex justify-between items-center">
@@ -22,7 +25,19 @@
     <div class="bg-white shadow-md p-6 rounded max-w-xl mx-auto text-center">
       <p class="text-lg mb-2">SkillCoins Balance:</p>
       <p id="coin-balance" class="text-4xl font-bold text-green-600">Loading...</p>
+      <div class="mt-6 space-x-4">
+        <button id="earnBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Earn Coins</button>
+        <button id="spendBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">Spend Coins</button>
+      </div>
     </div>
+  </section>
+
+  <!-- History Section -->
+  <section class="py-6 px-6 md:px-20">
+    <h3 class="text-2xl font-semibold mb-4 text-center">Transaction History</h3>
+    <ul id="historyList" class="max-w-xl mx-auto list-disc pl-6 text-left bg-white p-4 rounded shadow">
+      <li>Loading...</li>
+    </ul>
   </section>
 
   <!-- Footer -->
@@ -30,40 +45,83 @@
     &copy; 2025 SkillSwapX. Created with 💙 by Abhay Singh Tomar
   </footer>
 
-  <!-- Firebase Wallet Script -->
+  <!-- Firebase Setup for Compatibility (for safety fallback only) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
   <script>
     const firebaseConfig = {
-    apiKey: "AIzaSyBVjWbRv4mFpS3JzkvoZcaUduhlHnKUX4E",
-    authDomain: "collegue-c8d48.firebaseapp.com",
-    projectId: "collegue-c8d48",
-    storageBucket: "collegue-c8d48.firebasestorage.app",
-    messagingSenderId: "701506337347",
-    appId: "1:701506337347:web:340cf197f27c97bab232f6",
-    measurementId: "G-GX3784PQ93"
-  };
-
+      apiKey: "AIzaSyBVjWbRv4mFpS3JzkvoZcaUduhlHnKUX4E",
+      authDomain: "collegue-c8d48.firebaseapp.com",
+      projectId: "collegue-c8d48",
+      storageBucket: "collegue-c8d48.firebasestorage.app",
+      messagingSenderId: "701506337347",
+      appId: "1:701506337347:web:340cf197f27c97bab232f6",
+      measurementId: "G-GX3784PQ93"
+    };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  </script>
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        const uid = user.uid;
-        db.collection("users").doc(uid).get().then(doc => {
-          if (doc.exists) {
-            const coins = doc.data().skillCoins || 0;
-            document.getElementById("coin-balance").textContent = coins;
-          } else {
-            document.getElementById("coin-balance").textContent = "0";
-          }
-        });
-      } else {
-        window.location.href = "auth.html";
+  <!-- Wallet Logic Script -->
+  <script type="module">
+    import { auth, getSkillCoins, earnCoins, spendCoins } from './coin-logic.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+    import { getFirestore, doc, updateDoc, arrayUnion, getDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+    const db = getFirestore();
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const balanceEl = document.getElementById("coin-balance");
+      const earnBtn = document.getElementById("earnBtn");
+      const spendBtn = document.getElementById("spendBtn");
+      const historyList = document.getElementById("historyList");
+
+      async function loadHistory(uid) {
+        try {
+          const userRef = doc(db, "users", uid);
+          const userSnap = await getDoc(userRef);
+          const history = userSnap.data()?.history || [];
+          historyList.innerHTML = history.length
+            ? history.map(item => `<li>• ${item}</li>`).join("")
+            : "<li>No transactions yet</li>";
+        } catch (error) {
+          historyList.innerHTML = "<li>Error loading history</li>";
+        }
       }
+
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const coins = await getSkillCoins(user.uid);
+          balanceEl.textContent = coins;
+          await loadHistory(user.uid);
+
+          earnBtn.addEventListener("click", async () => {
+            await earnCoins(user.uid, 10);
+            const userRef = doc(db, "users", user.uid);
+            await updateDoc(userRef, {
+              history: arrayUnion(`+10 SkillCoins (Earned) - ${new Date().toLocaleString()}`)
+            });
+            alert("You earned 10 SkillCoins!");
+            location.reload();
+          });
+
+          spendBtn.addEventListener("click", async () => {
+            const success = await spendCoins(user.uid, 5);
+            if (success) {
+              const userRef = doc(db, "users", user.uid);
+              await updateDoc(userRef, {
+                history: arrayUnion(`-5 SkillCoins (Spent) - ${new Date().toLocaleString()}`)
+              });
+              alert("5 SkillCoins spent!");
+              location.reload();
+            }
+          });
+        } else {
+          window.location.href = "auth.html";
+        }
+      });
     });
   </script>
+
 </body>
 </html>
